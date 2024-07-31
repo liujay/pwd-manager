@@ -1,55 +1,47 @@
-from Crypto.Cipher import AES
-from Crypto import Random
-import base64
+import gnupg
 import hashlib
 from config_parser import GetConfigPaster
 
 KEY = GetConfigPaster('ENCRYPTION_KEY', 'key')
 
-class AESCipher(object):
-    def __init__(self, key): 
-        self.bs = AES.block_size
-        self.key = hashlib.sha256(key.encode()).digest()
+class GPGCipher(object):
+    def __init__(self, gnupghome, keyring): 
+        self.gnupghome = gnupghome
+        self.keyring = keyring
+        if gnupghome:
+            return gnupg.GPG(gnupghome=gnupghome, keyring=keyring)
+        else:
+            return gnupg.GPG()
 
-    def encrypt(self, raw):
-        raw = self._pad(raw)
-        iv = Random.new().read(AES.block_size)
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return base64.b64encode(iv + cipher.encrypt(raw.encode()))
 
-    def decrypt(self, enc):
-        enc = base64.b64decode(enc)
-        iv = enc[:AES.block_size]
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return self._unpad(cipher.decrypt(enc[AES.block_size:])).decode('utf-8')
-
-    def _pad(self, s):
-        return s + (self.bs - len(s) % self.bs) * chr(self.bs - len(s) % self.bs)
-
-    @staticmethod
-    def _unpad(s):
-        return s[:-ord(s[len(s)-1:])]
+    def encrypt(self, data, recipients):
+        crypted = self.encrypt(
+            data,
+            recipients = recipients,
+            always_trust = True
+        )
+        return crypted
     
-def EncryptPassword(plain_text):
+    def decrypt(self, data, passphrase=None):
+        if passphrase:
+            clear = self.decrypt(
+                data,
+                passphrase = passphrase
+            )
+        else:
+            clear = self.decrypt(
+                data,
+            )
+        return clear
+    
+def EncryptPassword(data, cipher, recipients=None):
     '''
-    Encrypt the given string of password with AESCipher
-    Decode to string type for storing purpose
-    
-    plain_text: string
-    
-    Returns: string
+    Encrypt the given data/string of password with cipher
     '''
-    MSG = AESCipher(KEY)
-    return MSG.encrypt(plain_text).decode()
+    return cipher.encrypt(data, recipients)
 
-def DecryptPassword(encrypted_text):
+def DecryptPassword(data, cipher, passphrase):
     '''
-    Decrypt the string of previously encoded password with AESCipher.
-    Assumes encrypted_text was encrypted with the same key as the key provided for decryption
-    
-    encrypted_text: string
-    
-    Returns: string
+    Decrypt the given data/string of encoded password with cipher.
     '''
-    MSG = AESCipher(KEY)
-    return MSG.decrypt(str.encode(encrypted_text))
+    return cipher.decrypt(data, passphrase)

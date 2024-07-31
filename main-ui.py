@@ -564,7 +564,7 @@ def main():
     MainWindow = PWControlApp()
     MainWindow.geometry("280x420")
     MainWindow.resizable(False, False)  
-    MainWindow.iconbitmap('logo.ico')
+    #MainWindow.iconbitmap('logo.ico')
     MainWindow.title("PWControl")
     MainWindow.mainloop()
     
