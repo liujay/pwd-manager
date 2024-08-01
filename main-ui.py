@@ -562,8 +562,8 @@ class SettingsPage(tk.Frame):
 
 def main():
     MainWindow = PWControlApp()
-    MainWindow.geometry("280x420")
-    MainWindow.resizable(False, False)  
+    MainWindow.geometry("560x840")
+    MainWindow.resizable(True, True)  
     #MainWindow.iconbitmap('logo.ico')
     MainWindow.title("PWControl")
     MainWindow.mainloop()
