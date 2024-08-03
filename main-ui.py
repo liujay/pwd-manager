@@ -4,7 +4,9 @@ from config_parser import GetConfigPaster, ChangeConfigPasterValue
 from tkinter import ttk
 from tkinter import simpledialog 
 import engine
+import sqlite3
 
+DATAFILE = "database.db"
 class PWControlApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -62,6 +64,8 @@ class LoginPage(tk.Frame):
         password = self.masterpass_entry.get()
         #compare the typed in password against the master password. If correct, get to the Menupage
         if password == self.master_password:
+            #   check if ACCOUNT table exists in db file and create it if NOT
+            self.checkTable()
             self.controller.ShowFrame('MenuPage')
         #show attempt count and clear the entry field if the password is incorrect
         else:
@@ -70,6 +74,26 @@ class LoginPage(tk.Frame):
             self.incorrect_password_alert.place(x=85,y=250)
             self.masterpass_entry.delete(0, 'end')
 
+    def checkTable(self):
+        '''
+        Check if ACCOUNT table lives in db file and create it if NOT
+        '''
+        connection = sqlite3.connect(DATAFILE)
+        cur = connection.cursor()
+        cur.execute(""" SELECT name FROM sqlite_master WHERE type='table' AND name='ACCOUNT' """)
+        if cur.fetchone() is not None:
+            print(f"--- ACCOUNT table exist ---") 
+            pass
+        else:
+            print(f"--- creating ACCOUNT table ---") 
+            cur.execute("""CREATE TABLE ACCOUNT(
+                service text,
+                username text,
+                password text)
+                        """)
+        connection.commit()
+        cur.close()
+        connection.close()
 
 class MenuPage(tk.Frame):
     def __init__(self, parent, controller):

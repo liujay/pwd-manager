@@ -40,16 +40,21 @@ class Account(object):
         new_acc = (self.service,self.username,EncryptPassword(self.password))
         connection = sqlite3.connect(DATAFILE)
         cur = connection.cursor()
-        #Check if table/ database file is not found and create new if it is not there
-        cur.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='ACCOUNT' ''')
-        if cur.fetchone()[0]==1 : 
+        '''
+        #Check if ACCOUNT table exists and create new one if not
+        cur.execute(""" SELECT count(name) FROM sqlite_master WHERE type='table' AND name='ACCOUNT' """)
+        tables = cur.fetchall()
+        if len(tables)==1:
+            print(f"--- ACCOUNT table exist ---") 
             pass
         else:
+            print(f"--- creating ACCOUNT table ---") 
             cur.execute("""CREATE TABLE ACCOUNT(
                 service text,
                 username text,
                 password text)
                         """)
+        '''
         #Check if the account already exists and update if it is
         if self.GetPassword() == None:
             cur.executemany("INSERT INTO ACCOUNT (service, username, password) VALUES (?,?,?)", [new_acc])
