@@ -89,7 +89,9 @@ class LoginPage(tk.Frame):
             cur.execute("""CREATE TABLE ACCOUNT(
                 service text,
                 username text,
-                password text)
+                password text,
+                tag text,
+                note text)
                         """)
         connection.commit()
         cur.close()
@@ -141,6 +143,16 @@ class AddAccountPage(tk.Frame):
 
         self.username_entry = ttk.Entry(self, width=32)
         self.username_entry.pack()
+
+        ttk.Label(self, text="    Tag").pack( anchor='w')
+
+        self.tag_entry = ttk.Entry(self, width=32)
+        self.tag_entry.pack()
+
+        ttk.Label(self, text="    Note").pack( anchor='w')
+
+        self.note_entry = ttk.Entry(self, width=32)
+        self.note_entry.pack()
 
         ttk.Label(self, text="    Password").pack(anchor='w')
 
@@ -215,6 +227,8 @@ class AddAccountPage(tk.Frame):
         username = self.username_entry.get()
         service = self.service_entry.get()
         password = self.password_entry.get()
+        tag = self.tag_entry.get()
+        note = self.note_entry.get()
         #if not all boxs are filled, show error to the user
         if len(username) == 0 or len(service) == 0 or len(password) == 0:
             tk.messagebox.showerror(title="Insufficient information", message="Please fill in all the required fields")
@@ -232,7 +246,7 @@ class AddAccountPage(tk.Frame):
                 if not tk.messagebox.askyesno(title="Insecure Password", 
                         message="The password does not meet the standard requirements and might be insecure. Do you wish to proceed?"):
                     return
-            account = engine.Account(service, username, password)
+            account = engine.Account(service, username, password, tag, note)
             account.SaveAccount()                
         
 
@@ -263,9 +277,21 @@ class LoadAccountPage(tk.Frame):
         show_pass_button = tk.Button(self, text="Show Password", width=20, height=2, command = self.ShowPassword)
         show_pass_button.place(x=66,y=295)
 
+        ttk.Label(self, text="    Password").pack( anchor='w')
+
         self.password_field = ttk.Entry(self, width=32)        
         self.password_field.pack()
-              
+
+        ttk.Label(self, text="    Tag").pack( anchor='w')
+
+        self.tag_field = ttk.Entry(self, width=32)        
+        self.tag_field.pack()
+
+        ttk.Label(self, text="    Note").pack( anchor='w')
+
+        self.note_field = ttk.Entry(self, width=32)        
+        self.note_field.pack()
+
         home_button = tk.Button(self, text="Home", width=12,height=1,
                         command = self.HomeButton)
         home_button.place(x=0,y=0)        
@@ -328,7 +354,10 @@ class LoadAccountPage(tk.Frame):
         # and attempt to get the password of an account with the same service and username from the database
         else:
             account = engine.Account(service, username)
-            password = account.GetPassword()
+            result = account.GetPasswordTagNote()
+            password = result[0]
+            tag = result[1] if result[1] else 'Null'
+            note = result[2] if result[2] else 'Null'
             #if there is no account in the database with the same service and username, 
             # let the user know that the password cannot be found
             if password == None:
@@ -339,8 +368,11 @@ class LoadAccountPage(tk.Frame):
                 self.password_field.delete(0,tk.END)
                 self.password_field.insert(0,password)
                 pyperclip.copy(password)
-     
-     
+                self.tag_field.delete(0,tk.END)
+                self.tag_field.insert(0,tag)
+                self.note_field.delete(0,tk.END)
+                self.note_field.insert(0,note)
+
 class DeleteAccountPage(tk.Frame):
     def __init__(self, parent, controller):
         self.controller = controller

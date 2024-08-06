@@ -11,7 +11,7 @@ lower_case_characters = string.ascii_lowercase
 digit_characters = string.digits
 
 class Account(object):
-    def __init__(self, service, username, password=''):
+    def __init__(self, service, username, password='', tag='', note=''):
         '''
         Initializes an Account object
 
@@ -20,11 +20,15 @@ class Account(object):
             self.service (string, determined by input text)
             self.username (string, determined by input text)
             self.password (string, determined by input text)
+            self.tag (string, determined by input text)
+            self.note (string, determined by input text)
         If the website service contains unnecessary parts, attempt to remove them
         '''
         self.service = service.strip().replace('https://','')
         self.username = username.strip()
         self.password = password.strip()
+        self.tag = tag.strip()
+        self.note = note.strip()
         
     def SaveAccount(self):
         '''
@@ -71,6 +75,29 @@ class Account(object):
                 return DecryptPassword(row[2])
         else:
             return None
+        
+        cursor.close()
+        connection.close()
+
+    def GetPasswordTagNote(self):
+        '''
+        Load tag and note of the Account from the database 
+        Return None if the password or Account is not found
+        
+        DATAFILE: path to where the Account(with encrypted password) is saved
+        
+        Returns: tuple of strings or None
+        '''
+        connection = sqlite3.connect(DATAFILE)
+        cursor = connection.cursor()
+
+        cursor.execute("""SELECT password, tag, note FROM ACCOUNT WHERE (service,username) = (?,?)""", [self.service,self.username])
+        records = cursor.fetchall()
+        if len(records) == 1:
+            for row in records:
+                return [DecryptPassword(row[0]), row[1], row[2]]
+        else:
+            return [None, None, None]
         
         cursor.close()
         connection.close()
