@@ -7,6 +7,7 @@ import engine
 import sqlite3
 
 DATAFILE = "database.db"
+VOID = "VOID"
 class PWControlApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -356,8 +357,8 @@ class LoadAccountPage(tk.Frame):
             account = engine.Account(service, username)
             result = account.GetPasswordTagNote()
             password = result[0]
-            tag = result[1] if result[1] else 'Null'
-            note = result[2] if result[2] else 'Null'
+            tag = result[1] if result[1] else VOID
+            note = result[2] if result[2] else VOID
             #if there is no account in the database with the same service and username, 
             # let the user know that the password cannot be found
             if password == None:

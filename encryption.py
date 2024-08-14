@@ -67,9 +67,7 @@ def EncryptPassword(data):
     '''
     cipher = GPGCipher(GNUPGHOME, KEYRING, RECIPIENTS, SYMMETRIC)
     encoded = cipher.encrypt(data)
-    print(f"Created object cipher of type: {type(cipher)}")
-    print(f"password: {data} encoded as:\n{encoded}")
-    print(f"type of encoded pwd: {type(encoded)}")
+    print(f"encrypting password: {data}")
     return encoded
 
 def DecryptPassword(data):
@@ -78,6 +76,5 @@ def DecryptPassword(data):
     '''
     cipher = GPGCipher(GNUPGHOME, KEYRING, RECIPIENTS, SYMMETRIC)
     clear = cipher.decrypt(data)
-    print(f"encrypted password:\n{data}")
-    print(f"decoded as: {clear}")
+    print(f"decrypting password: {clear}")
     return clear
